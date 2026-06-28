@@ -273,8 +273,14 @@ bool xemu_get_frame_skip(void)
 
 void xemu_set_submit_frames(int count)
 {
-    if (count < 1) count = 1;
-    if (count > NUM_SUBMIT_FRAMES) count = NUM_SUBMIT_FRAMES;
+    if (count < 1) {
+        count = 1;
+    } else if (count > 2) {
+        count = 2;
+    }
+    if (count > NUM_SUBMIT_FRAMES) {
+        count = NUM_SUBMIT_FRAMES;
+    }
     g_xemu_submit_frames = count;
 }
 

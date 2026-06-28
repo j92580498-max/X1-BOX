@@ -93,18 +93,6 @@ static void *mttcg_cpu_thread_fn(void *arg)
             bql_unlock();
             r = tcg_cpu_exec(cpu);
             bql_lock();
-#ifdef XBOX
-            {
-                static int dbg_mttcg = 0;
-                if (dbg_mttcg < 30) {
-                    error_report("[MTTCG] cpu_exec returned r=%d "
-                                 "halted=%d stop=%d exit_req=%d",
-                                 r, cpu->halted, cpu->stop,
-                                 qatomic_read(&cpu->exit_request));
-                    dbg_mttcg++;
-                }
-            }
-#endif
             switch (r) {
             case EXCP_DEBUG:
                 cpu_handle_guest_debug(cpu);
