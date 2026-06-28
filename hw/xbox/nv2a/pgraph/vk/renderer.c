@@ -1234,6 +1234,7 @@ static void pgraph_vk_flip_stall(NV2AState *d)
         extern volatile int32_t *xbox_ram_fp_active_ptr;
         extern volatile int32_t *xbox_ram_fp_cb_count_ptr;
         extern uintptr_t *xbox_ram_fp_vram_base_ptr;
+#ifndef __ANDROID__
         if (xbox_ram_fp_active_ptr &&
             xbox_ram_fp_cb_count_ptr &&
             xbox_ram_fp_vram_base_ptr &&
@@ -1245,6 +1246,7 @@ static void pgraph_vk_flip_stall(NV2AState *d)
                 error_report("[TLB-FP] activated after first flip");
             }
         }
+#endif
     }
 #endif
     {
@@ -1265,8 +1267,16 @@ static void pgraph_vk_flip_stall(NV2AState *d)
      * the flip stall finish submits it. This piggybacks the surface-to-staging
      * copy onto the same GPU submission as the frame's draws, eliminating a
      * separate SURFACE_DOWN finish (one fewer vkQueueSubmit + fence cycle).
+     *
+     * Android devices with flaky Vulkan drivers have been observed to crash
+     * immediately after the first flip when this path is combined with the
+     * experimental display fast path. Keep the pre-recording optimization on
+     * non-Android builds, but avoid it on Android and let the existing stable
+     * fallback path handle the download lazily.
      */
+#ifndef __ANDROID__
     pgraph_vk_prerecord_display_download(d);
+#endif
 
     pgraph_vk_finish(&d->pgraph, VK_FINISH_REASON_FLIP_STALL);
 
